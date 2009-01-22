@@ -107,6 +107,13 @@
  *      tile and performs the threshold operation, resulting in a
  *      binary image for each tile.  These are stitched into the final result.
  *      It does not generate an 8 bpp threshold-normalized image.
+ *
+ *  (3) pixContrastNorm() computes and applies a local TRC so that the
+ *      local dynamic range is expanded to the full 8 bits, where the
+ *      darkest pixels are mapped to 0 and the lightest to 255.  This is
+ *      useful for improving the appearance of pages with very light
+ *      foreground or very dark background, and where the local TRC
+ *      function doesn't change rapidly with position.
  */
 
 #include <stdio.h>
@@ -2553,7 +2560,7 @@ PIX       *pixt, *pixsd, *pixmin, *pixbg, *pixbgi, *pixd;
  *          are (2 * smoothx + 1) and (2 * smoothy + 1).  They
  *          should be in the range [1 - 2].
  *      (6) A linear TRC (gamma = 1.0) is applied to increase the contrast
- *          in each tile.  The result can then be globally corrected
+ *          in each tile.  The result can subsequently be globally corrected,
  *          by applying pixGammaTRC() with arbitrary values of gamma
  *          and the 0 and 255 points of the mapping.
  */

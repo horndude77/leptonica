@@ -22,6 +22,15 @@ They are <i>not</i> a complete listing of the modifications.
 
 <pre>
 
+1.60   19 Jan 09
+       Fixed bug in pixBlockconv(), introduced in 1.59, that causes
+       overflow when convolving with an image that has white (255)
+       at the edges.  [quickly found by Dave Bryan]
+       Include function to display freetype fonts in a pix.
+       The files freetype.c and freetype.h are in the distribution, but are not
+       yet linked into the library.  This is contributed by Tony Dovgal,
+       and this version works only for MSVC.
+
 1.59   11 Jan 09
        Lots of changes since 1.58.
        New files: affinecompose.c, ptra.c, warper.c, watershed.{h,c}.

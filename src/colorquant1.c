@@ -3334,6 +3334,7 @@ PIXCMAP   *cmapc;
         return (PIX *)ERROR_PTR("pixd not made", procName, NULL);
     cmapc = pixcmapCopy(cmap);
     pixSetColormap(pixd, cmapc);
+    pixCopyResolution(pixd, pixs);
 
         /* Insert the colormap index of the color nearest to the input pixel */
     datas = pixGetData(pixs);

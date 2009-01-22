@@ -575,6 +575,7 @@ PIXCMAP   *cmap;
         /* Set all pixels in pixd to the colormap index */
     pixd = pixCreateTemplate(pixt);
     pixSetColormap(pixd, cmap);
+    pixCopyResolution(pixd, pixs);
     datad = pixGetData(pixd);
     wpld = pixGetWpl(pixd);
     for (i = 0; i < h; i++) {
@@ -928,6 +929,7 @@ PIXCMAP   *cmap;
     pixcmapToRGBTable(cmap, &tab, NULL);
     pixGetDimensions(pixt, &w, &h, NULL);
     pixd = pixCreate(w, h, 32);
+    pixCopyResolution(pixd, pixs);
     datad = pixGetData(pixd);
     wpld = pixGetWpl(pixd);
     datat = pixGetData(pixt);
@@ -2430,6 +2432,7 @@ PIX       *pixd;
 
     if ((pixd = pixCreate(w, h, d)) == NULL)
         return (PIX *)ERROR_PTR("pixd not made", procName, NULL);
+    pixCopyResolution(pixd, pixs);
 
         /* Unpack the bits */
     datas = pixGetData(pixs);
@@ -2876,6 +2879,7 @@ PIX       *pixt, *pixd;
 
         /* Convert RGB image */
     pixd = pixCreate(w, h, 8);
+    pixCopyResolution(pixd, pixs);
     wplt = pixGetWpl(pixt);
     datat = pixGetData(pixt);
     wpld = pixGetWpl(pixd);

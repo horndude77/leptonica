@@ -95,7 +95,7 @@ static char  mainName[] = "splitcomp_reg";
         for (i = 0; i < 5; i++) {
             pixc = pixCopy(NULL, pix32);
             boxa = pixSplitComponentIntoBoxa(pixt, NULL, minsum[i], skipdist[i],
-                                             delta[i], maxbg[i], 0);
+                                             delta[i], maxbg[i], 0, 1);
             boxaWriteStream(stderr, boxa);
             pixd = pixBlendBoxaRandom(pixc, boxa, 0.4);
             pixRenderBoxaArb(pixd, boxa, 2, 255, 0, 0);
@@ -126,7 +126,7 @@ static char  mainName[] = "splitcomp_reg";
     for (i = 0; i < 5; i++) {
         pixc = pixCopy(NULL, pix32);
         boxa = pixSplitIntoBoxa(pixs, minsum[i], skipdist[i],
-                                delta[i], maxbg[i], 0);
+                                delta[i], maxbg[i], 0, 1);
         boxaWriteStream(stderr, boxa);
         pixd = pixBlendBoxaRandom(pixc, boxa, 0.4);
         pixRenderBoxaArb(pixd, boxa, 2, 255, 0, 0);

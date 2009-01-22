@@ -31,6 +31,7 @@
  *           l_int32   boxGetCentroid()
  *           BOX      *boxClipToRectangle()
  *           void      boxResizeOneSide()
+ *           BOX      *boxAdjustSides()
  *
  *      Boxa combination
  *           l_int32   boxaJoin()
@@ -637,6 +638,48 @@ l_int32  x, y, w, h;
     else if (sideflag == L_FROM_BOTTOM)
         boxSetGeometry(box, -1, -1, -1, loc - y + 1);
     return 0;
+}
+
+
+/*!
+ *  boxAdjustSides()
+ *
+ *      Input:  box (to be resized on one side)
+ *              delleft, delright, deltop, delbot (changes in location of
+ *                                                 each side)
+ *      Return: boxd, or null on error if boxd has 0 width or height
+ *
+ *  Notes:
+ *      (1) New box dimensions are cropped at left and top to x >= 0 and y >= 0.
+ *      (2) For example, to expand the box by 20 pixels on each side, use
+ *             boxAdjustSides(box, -20, 20, -20, 20);
+ */
+BOX *
+boxAdjustSides(BOX     *box,
+               l_int32  delleft,
+               l_int32  delright,
+               l_int32  deltop,
+               l_int32  delbot)
+{
+l_int32  x, y, w, h, xl, xr, yt, yb, wnew, hnew;
+
+    PROCNAME("boxAdjustSides");
+
+    if (!box)
+        return (BOX *)ERROR_PTR("box not defined", procName, NULL);
+
+    boxGetGeometry(box, &x, &y, &w, &h);
+    xl = L_MAX(0, x + delleft);
+    yt = L_MAX(0, y + deltop);
+    xr = x + w + delright;  /* one pixel beyond right edge */
+    yb = y + h + delbot;    /* one pixel below bottom edge */
+    wnew = xr - xl;
+    hnew = yb - yt;
+    
+    if (wnew < 1 || hnew < 1)
+        return (BOX *)ERROR_PTR("boxd has 0 area", procName, NULL);
+
+    return boxCreate(xl, yt, wnew, hnew);
 }
 
 

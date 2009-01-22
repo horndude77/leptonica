@@ -57,19 +57,19 @@
  *    (2) Feed the priority queue with neighbors of pixels that are
  *        popped off the queue.  Each of these queue pixels is labelled
  *        with the index value of its parent.
- *    (3) Each pixel is also labelled, in a 16-bit image, with the marker
+ *    (3) Each pixel is also labelled, in a 32-bit image, with the marker
  *        or local minimum index, from which it was originally derived.
  *    (4) There are actually 3 classes of labels: seeds, minima, and
  *        fillers.  The fillers are labels of regions that have already
  *        been identified as watersheds and are continuing to fill, for
  *        the purpose of finding higher watersheds.
  *    (5) When a pixel is popped that has already been labelled in the
- *        16-bit image and that label differs from the label of its
+ *        32-bit image and that label differs from the label of its
  *        parent (stored in the queue pixel), a boundary has been crossed.
  *        There are several cases:
  *         (a) Both parents are derived from markers but at least one
- *             is not deep enough to become a watershed.  Absort the
- *             shallower basin into the deeper one, fixing the LUT so
+ *             is not deep enough to become a watershed.  Absorb the
+ *             shallower basin into the deeper one, fixing the LUT to
  *             redirect the shallower index to the deeper one.
  *         (b) Both parents are derived from markers and both are deep
  *             enough.  Identify and save the watershed for each marker.
@@ -289,20 +289,20 @@ L_WSHED  *wshed;
 l_int32
 wshedApply(L_WSHED  *wshed)
 {
-l_int32     nseeds, nother, nboth, arraysize;
-l_int32     i, j, val, ival, x, y, w, h, index, mindepth;
-l_int32     imin, imax, jmin, jmax, cindex, clabel, nindex;
-l_int32     hindex, hlabel, hmin, hmax, minhindex, maxhindex;
-l_int32    *lut;
-l_uint32    ulabel, uval;
-void      **lines8, **linelab32;
-NUMA       *nalut, *nalevels, *nash, *namh, *nasi;
-NUMA      **links;
-PHEAP      *ph;
-PIX        *pixmin, *pixsd;
-PIXA       *pixad;
-PSTACK     *rstack;
-PTA        *ptas, *ptao;
+l_int32   nseeds, nother, nboth, arraysize;
+l_int32   i, j, val, x, y, w, h, index, mindepth;
+l_int32   imin, imax, jmin, jmax, cindex, clabel, nindex;
+l_int32   hindex, hlabel, hmin, hmax, minhindex, maxhindex;
+l_int32  *lut;
+l_uint32  ulabel, uval;
+void    **lines8, **linelab32;
+NUMA     *nalut, *nalevels, *nash, *namh, *nasi;
+NUMA    **links;
+PHEAP    *ph;
+PIX      *pixmin, *pixsd;
+PIXA     *pixad;
+PSTACK   *rstack;
+PTA      *ptas, *ptao;
 
     PROCNAME("wshedApply");
 

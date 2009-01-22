@@ -346,10 +346,13 @@ PIX       *pixsb, *pixacc, *pixd;
  *      (2) Returns a copy if both wc and hc are 0
  *      (3) Require that wc < w/2 and hc < h/2, where (w,h) are
  *          the dimensions of pixs.
- *      (4) Why a tiled version?  Because the accumulator is a uint32,
- *          overflow can occur for an image with more than 16M pixels.
- *          Also, the accumulator array for 16M pixels is 64 MB; using
- *          tiles reduces the size of this array.
+ *      (4) Why a tiled version?  Three reasons:
+ *          (a) Because the accumulator is a uint32, overflow can occur
+ *              for an image with more than 16M pixels.
+ *          (b) The accumulator array for 16M pixels is 64 MB; using
+ *              tiles reduces the size of this array.
+ *          (c) Each tile can be processed independently, in parallel,
+ *              on a multicore processor.
  */
 PIX *
 pixBlockconvTiled(PIX     *pix,
@@ -399,7 +402,7 @@ PIXTILING  *pt;
         * They are larger than the extent of the filter because
         * although the filter is symmetric with respect to its origin,
         * the implementation is asymmetric -- see the implementation in
-        * pixBlockconvGray(). */
+        * pixBlockconvGrayTile(). */
     pixd = pixCreateTemplateNoInit(pixs);
     pt = pixTilingCreate(pixs, nx, ny, 0, 0, wc + 2, hc + 2);
     for (i = 0; i < ny; i++) {

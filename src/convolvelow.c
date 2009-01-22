@@ -62,6 +62,14 @@
  *          lines.
  *      (5) The caller should verify that wc < w and hc < h.
  *          Under those conditions, illegal reads and writes can occur.
+ *      (6) Implementation note: it is important to add 0.5 for
+ *          roundoff in the main loop that runs over all pixels.
+ *          However, no roundoff can be added for the subsequent loops
+ *          that renormalize pixel values within a filter half-width
+ *          of the image edge.  To do so results in effectively adding
+ *          the factor twice, and with white (255) pixels along any of
+ *          the four edges, this will overflow the value to 0, resulting
+ *          in one-pixel-wide black lines along the image boundary!
  */
 void
 blockconvLow(l_uint32  *data,
@@ -119,19 +127,19 @@ l_uint32  *linemina, *linemaxa, *line;
             wn = wc + j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw + 0.5);
+            val = (l_uint8)(val * normh * normw);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wc + 1; j < wmwc; j++) {
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh + 0.5);
+            val = (l_uint8)(val * normh);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wmwc; j < w; j++) {
             wn = wc + w - j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw + 0.5);
+            val = (l_uint8)(val * normh * normw);
             SET_DATA_BYTE(line, j, val);
         }
     }
@@ -144,19 +152,19 @@ l_uint32  *linemina, *linemaxa, *line;
             wn = wc + j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw + 0.5);
+            val = (l_uint8)(val * normh * normw);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wc + 1; j < wmwc; j++) {
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh + 0.5);
+            val = (l_uint8)(val * normh);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wmwc; j < w; j++) {
             wn = wc + w - j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw + 0.5);
+            val = (l_uint8)(val * normh * normw);
             SET_DATA_BYTE(line, j, val);
         }
     }
@@ -167,14 +175,14 @@ l_uint32  *linemina, *linemaxa, *line;
             wn = wc + j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normw + 0.5);
+            val = (l_uint8)(val * normw);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wmwc; j < w; j++) {   /* last wc columns */
             wn = wc + w - j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normw + 0.5);
+            val = (l_uint8)(val * normw);
             SET_DATA_BYTE(line, j, val);
         }
     }

@@ -1,5 +1,5 @@
 /*====================================================================*
- -  Copyright (C) 2001 Leptonica.  All rights reserved.
+ -  Copyright (C) 2008 Leptonica.  All rights reserved.
  -  This software is distributed in the hope that it will be
  -  useful, but with NO WARRANTY OF ANY KIND.
  -  No author or distributor accepts responsibility to anyone for the
@@ -13,20 +13,11 @@
  -  or altered from any source or modified source distribution.
  *====================================================================*/
 
-#ifndef  LEPTONICA_ALLHEADERS_H
-#define  LEPTONICA_ALLHEADERS_H
+#ifndef  LEPTONICA_FREETYPE_H
+#define  LEPTONICA_FREETYPE_H
 
+#define  LEPTONICA_FT_RESOLUTION 96
 
-#define LIBLEPT_MAJOR_VERSION   1
-#define LIBLEPT_MINOR_VERSION   60
+typedef struct ft_library_st FT_LIBRARY;
 
-#include "alltypes.h"
-
-#ifndef NO_PROTOS
-#include  "leptprotos.h"
-#endif  /* NO_PROTOS */
-
-
-#endif /* LEPTONICA_ALLHEADERS_H */
-
-
+#endif  /* LEPTONICA_FREETYPE_H */

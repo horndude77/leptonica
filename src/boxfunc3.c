@@ -564,6 +564,7 @@ PIXCMAP  *cmap;
  *              delta (difference required to stop propagation)
  *              maxbg (maximum number of allowed bg pixels in ref scan)
  *              maxcomps (use 0 for unlimited number of subdivided components)
+ *              remainder (set to 1 to get b.b. of remaining stuff)
  *      Return: boxa (of rectangles covering the fg of pixs), or null on error
  *
  *  Notes:
@@ -582,6 +583,9 @@ PIXCMAP  *cmap;
  *      (4) The parameter @maxcomps gives the maximum number of allowed
  *          rectangles extracted from any single connected component.
  *          Use 0 if no limit is to be applied.
+ *      (5) The flag @remainder specifies whether we take a final bounding
+ *          box for anything left after the maximum number of allowed
+ *          rectangle is extracted.
  */
 BOXA *
 pixSplitIntoBoxa(PIX     *pixs,
@@ -589,7 +593,8 @@ pixSplitIntoBoxa(PIX     *pixs,
                  l_int32  skipdist,
                  l_int32  delta,
                  l_int32  maxbg,
-                 l_int32  maxcomps)
+                 l_int32  maxcomps,
+                 l_int32  remainder)
 {
 l_int32  i, n;
 BOX     *box;
@@ -609,7 +614,7 @@ PIXA    *pixas;
         pix = pixaGetPix(pixas, i, L_CLONE);
         box = boxaGetBox(boxas, i, L_CLONE);
         boxa = pixSplitComponentIntoBoxa(pix, box, minsum, skipdist,
-                                         delta, maxbg, maxcomps);
+                                         delta, maxbg, maxcomps, remainder);
         boxaJoin(boxad, boxa, 0, 0);
         pixDestroy(&pix);
         boxDestroy(&box);
@@ -632,6 +637,7 @@ PIXA    *pixas;
  *              delta (difference required to stop propagation)
  *              maxbg (maximum number of allowed bg pixels in ref scan)
  *              maxcomps (use 0 for unlimited number of subdivided components)
+ *              remainder (set to 1 to get b.b. of remaining stuff)
  *      Return: boxa (of rectangles covering the fg of pixs), or null on error
  *
  *  Notes:
@@ -666,6 +672,27 @@ PIXA    *pixas;
  *          typically represents the UL corner of an underlying image,
  *          of which pixs is one component.  If @box is null,
  *          the UL corner is taken to be (0, 0).
+ *      (5) The parameter @maxcomps gives the maximum number of allowed
+ *          rectangles extracted from any single connected component.
+ *          Use 0 if no limit is to be applied.
+ *      (6) The flag @remainder specifies whether we take a final bounding
+ *          box for anything left after the maximum number of allowed
+ *          rectangle is extracted.
+ *      (7) So if @maxcomps > 0, it specifies that we want no more than
+ *          the first @maxcomps rectangles that satisfy the input
+ *          criteria.  After this, we can get a final rectangle that
+ *          bounds everything left over by setting @remainder == 1.
+ *          If @remainder == 0, we only get rectangles that satisfy
+ *          the input criteria.
+ *      (8) It should be noted that the removal of rectangles can
+ *          break the original c.c. into several c.c.
+ *      (9) Summing up:
+ *            * If @maxcomp == 0, the splitting proceeds as far as possible.
+ *            * If @maxcomp > 0, the splitting stops when @maxcomps are
+ *                found, or earlier if no more components can be selected.
+ *            * If @remainder == 1 and components remain that cannot be
+ *                selected, they are returned as a single final rectangle;
+ *                otherwise, they are ignored.
  */
 BOXA *
 pixSplitComponentIntoBoxa(PIX     *pix,
@@ -674,7 +701,8 @@ pixSplitComponentIntoBoxa(PIX     *pix,
                           l_int32  skipdist,
                           l_int32  delta,
                           l_int32  maxbg,
-                          l_int32  maxcomps)
+                          l_int32  maxcomps,
+                          l_int32  remainder)
 {
 l_int32  i, w, h, boxx, boxy, bx, by, bw, bh, maxdir, maxscore;
 l_int32  iter;
@@ -728,27 +756,28 @@ PIX     *pixs;
             boxs = boxt3;
             if (boxs) {
                 boxGetGeometry(boxs, NULL, NULL, &bw, &bh);
-                if (bw < 2 || bh < 2)  /* we're finished */
-                    boxDestroy(&boxs);
+                if (bw < 2 || bh < 2)
+                    boxDestroy(&boxs);  /* we're done */
             }
         }
-        else {  /* save the last box and quit */
-            boxt1 = boxTransform(boxs, boxx, boxy, 1.0, 1.0);
-            boxaAddBox(boxad, boxt1, L_INSERT);
-            boxDestroy(&boxs);
+        else {  /* no more valid rectangles can be found */
+            if (remainder == 1) {  /* save the last box */
+                boxt1 = boxTransform(boxs, boxx, boxy, 1.0, 1.0);
+                boxaAddBox(boxad, boxt1, L_INSERT);
+            }
+            boxDestroy(&boxs);  /* we're done */
         }
         boxaDestroy(&boxat);
         numaDestroy(&nascore);
         numaDestroy(&nas);
 
         iter++;
-        if (iter == maxcomps) {
-            if (boxs) {  /* oops -- just take the last rectangle as it it */
+        if ((iter == maxcomps) && boxs) {
+            if (remainder == 1) {  /* save the last box */
                 boxt1 = boxTransform(boxs, boxx, boxy, 1.0, 1.0);
                 boxaAddBox(boxad, boxt1, L_INSERT);
-                boxDestroy(&boxs);
-                L_ERROR("incomplete partitioning", procName);
             }
+            boxDestroy(&boxs);  /* we're done */
         }
     }
 
