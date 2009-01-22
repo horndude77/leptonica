@@ -102,8 +102,8 @@ l_uint32  *linemina, *linemaxa, *line;
             jmin = L_MAX(j - 1 - wc, 0);
             jmax = L_MIN(j + wc, w - 1);
             val = linemaxa[jmax] - linemaxa[jmin]
-                  - linemina[jmax] + linemina[jmin];
-            val = (l_uint8)(norm * val);
+                  + linemina[jmin] - linemina[jmax];
+            val = (l_uint8)(norm * val + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
     }
@@ -119,19 +119,19 @@ l_uint32  *linemina, *linemaxa, *line;
             wn = wc + j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw);
+            val = (l_uint8)(val * normh * normw + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wc + 1; j < wmwc; j++) {
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh);
+            val = (l_uint8)(val * normh + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wmwc; j < w; j++) {
             wn = wc + w - j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw);
+            val = (l_uint8)(val * normh * normw + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
     }
@@ -144,19 +144,19 @@ l_uint32  *linemina, *linemaxa, *line;
             wn = wc + j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw);
+            val = (l_uint8)(val * normh * normw + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wc + 1; j < wmwc; j++) {
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh);
+            val = (l_uint8)(val * normh + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wmwc; j < w; j++) {
             wn = wc + w - j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normh * normw);
+            val = (l_uint8)(val * normh * normw + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
     }
@@ -167,14 +167,14 @@ l_uint32  *linemina, *linemaxa, *line;
             wn = wc + j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normw);
+            val = (l_uint8)(val * normw + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
         for (j = wmwc; j < w; j++) {   /* last wc columns */
             wn = wc + w - j;
             normw = (l_float32)fwc / (l_float32)wn;   /* > 1 */
             val = GET_DATA_BYTE(line, j);
-            val = (l_uint8)(val * normw);
+            val = (l_uint8)(val * normw + 0.5);
             SET_DATA_BYTE(line, j, val);
         }
     }

@@ -32,7 +32,7 @@ main(int    argc,
      char **argv)
 {
 char        *str;
-l_int32      i, j;
+l_int32      i, j, same, ok;
 l_float32    sum;
 L_KERNEL    *kel1, *kel2, *kel3, *kelx, *kely;
 PIX         *pixs, *pixg, *pixd, *pixt, *pixt2;
@@ -135,6 +135,29 @@ static char  mainName[] = "kernel_reg";
     pixWrite("junkker5.bmp", pixt, IFF_BMP);
     pixCompareGray(pixd, pixt, L_COMPARE_ABS_DIFF, GPLOT_X11, NULL,
                    NULL, NULL, NULL);
+    pixt2 = pixBlockconvTiled(pixg, 5, 5, 3, 6);
+    pixSaveTiled(pixt2, pixa, 1, 0, 20, 0);
+    pixWrite("junkker5a.bmp", pixt2, IFF_BMP);
+    pixDestroy(&pixt2);
+
+    ok = TRUE;
+    for (i = 1; i <= 7; i++) {
+        for (j = 1; j <= 7; j++) {
+            if (i == 1 && j == 1) continue;
+            pixt2 = pixBlockconvTiled(pixg, 5, 5, j, i);
+            pixEqual(pixt2, pixd, &same);
+            if (!same) {
+                fprintf(stderr," Error for nx = %d, ny = %d\n", j, i);
+                ok = FALSE;
+            }
+            pixDestroy(&pixt2);
+        }
+    }
+    if (ok)
+        fprintf(stderr, "OK: Tiled results identical to pixConvolve()\n");
+    else
+        fprintf(stderr, "ERROR: Tiled results not identical to pixConvolve()\n");
+          
     pixDestroy(&pixs);
     pixDestroy(&pixg);
     pixDestroy(&pixd);

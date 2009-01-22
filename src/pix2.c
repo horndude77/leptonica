@@ -37,10 +37,11 @@
  *           l_int32     pixSetAll()
  *           l_int32     pixSetAllArbitrary()
  *
- *      Rectangular region clear/set/set-to-arbitrary-value
+ *      Rectangular region clear/set/set-to-arbitrary-value/blend
  *           l_int32     pixClearInRect()
  *           l_int32     pixSetInRect()
  *           l_int32     pixSetInRectArbitrary()
+ *           l_int32     pixBlendInRect()
  *
  *      Set pad bits
  *           l_int32     pixSetPadBits()
@@ -496,7 +497,10 @@ setPixelLow(l_uint32  *line,
  *      Input:  pix
  *      Return: 0 if OK, 1 on error
  *
- *  Action: clears all data to 0
+ *  Notes:
+ *      (1) Clears all data to 0.  For 1 bpp, this is white; for grayscale
+ *          or color, this is black.  For colormapped pix, the result
+ *          is likely to be not what was intended!
  */
 l_int32
 pixClearAll(PIX  *pix)
@@ -505,6 +509,8 @@ pixClearAll(PIX  *pix)
 
     if (!pix)
         return ERROR_INT("pix not defined", procName, 1);
+    if (pixGetColormap(pix) != NULL)
+        L_WARNING("clearing pixels in cmapped image!", procName);
 
     pixRasterop(pix, 0, 0, pixGetWidth(pix), pixGetHeight(pix),
                 PIX_CLR, NULL, 0, 0);
@@ -518,7 +524,10 @@ pixClearAll(PIX  *pix)
  *      Input:  pix
  *      Return: 0 if OK, 1 on error
  *
- *  Action: sets all data to 1
+ *  Notes:
+ *      (1) Sets all data to 1.  For 1 bpp, this is black; for grayscale
+ *          or color, this is white.  For colormapped pix, the result
+ *          is likely to be not what was intended!
  */
 l_int32
 pixSetAll(PIX  *pix)
@@ -527,6 +536,8 @@ pixSetAll(PIX  *pix)
 
     if (!pix)
         return ERROR_INT("pix not defined", procName, 1);
+    if (pixGetColormap(pix) != NULL)
+        L_WARNING("setting pixels in cmapped image!", procName);
 
     pixRasterop(pix, 0, 0, pixGetWidth(pix), pixGetHeight(pix),
                 PIX_SET, NULL, 0, 0);
@@ -732,6 +743,61 @@ BOX       *boxc;
             default:
                 return ERROR_INT("depth not 2|4|8|16|32 bpp", procName, 1);
             }
+        }
+    }
+
+    return 0;
+}
+
+
+/*!
+ *  pixBlendInRect()
+ *
+ *      Input:  pixs (32 bpp rgb)
+ *              box (in which all pixels will be blended)
+ *              val  (blend value; 0xrrggbb00)
+ *              fract (fraction of color to be blended with each pixel in pixs)
+ *      Return: 0 if OK; 1 on error
+ *
+ *  Notes:
+ *      (1) This is an in-place function.  It blends the input color @val
+ *          with the pixels in pixs in the specified rectangle.
+ */
+l_int32
+pixBlendInRect(PIX       *pixs,
+               BOX       *box,
+               l_uint32   val,
+               l_float32  fract)
+{
+l_int32    i, j, bx, by, bw, bh, w, h, wpls;
+l_int32    prval, pgval, pbval, rval, gval, bval;
+l_uint32   val32;
+l_uint32  *datas, *lines;
+
+    PROCNAME("pixBlendInRect");
+
+    if (!pixs || pixGetDepth(pixs) != 32)
+        return ERROR_INT("pixs not defined or not 32 bpp", procName, 1);
+    if (!box)
+        return ERROR_INT("box not defined", procName, 1);
+
+    boxGetGeometry(box, &bx, &by, &bw, &bh);
+    pixGetDimensions(pixs, &w, &h, NULL);
+    datas = pixGetData(pixs);
+    wpls = pixGetWpl(pixs);
+    extractRGBValues(val, &rval, &gval, &bval);
+    for (i = 0; i < bh; i++) {   /* scan over box */
+        if (by + i < 0 || by + i >= h) continue;
+        lines = datas + (by + i) * wpls;
+        for (j = 0; j < bw; j++) {
+            if (bx + j < 0 || bx + j >= w) continue;
+            val32 = *(lines + bx + j);
+            extractRGBValues(val32, &prval, &pgval, &pbval);
+            prval = (l_int32)((1. - fract) * prval + fract * rval);
+            pgval = (l_int32)((1. - fract) * pgval + fract * gval);
+            pbval = (l_int32)((1. - fract) * pbval + fract * bval);
+            composeRGBPixel(prval, pgval, pbval, &val32);
+            *(lines + bx + j) = val32;
         }
     }
 
