@@ -1,0 +1,10 @@
+Makefile
+config.log
+config.status
+config_auto.h
+endiantest
+stamp-h1
+*.o
+*.a
+*.swp
+src/.deps
